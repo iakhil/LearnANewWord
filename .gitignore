@@ -1,0 +1,26 @@
+# Python-related files
+*.pyc
+__pycache__/
+.env
+
+# Node.js or frontend dependencies (if applicable)
+node_modules/
+*.log
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Python virtual environments
+venv/
+env/
+
+# Frontend build files
+dist/
+build/
+
+# IDE-specific files
+.vscode/
+.idea/
+
+
