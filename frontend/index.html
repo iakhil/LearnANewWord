@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Learn a Word</title>
+    <link rel="icon" type="image/x-icon" href="favicon.png">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -115,7 +116,7 @@
         async function getRatingFromAPI(userMeaning, actualMeaning) {
             try {
                 const response = await axios.post(
-                    'http://localhost:5000/api/rate-meaning',
+                    'https://learnanewword.onrender.com/api/rate-meaning',
                     {
                         user_meaning: userMeaning,
                         actual_meaning: actualMeaning
@@ -131,7 +132,7 @@
         async function getSentenceRatingFromAPI(userSentence, word) {
             try {
                 const response = await axios.post(
-                    'http://localhost:5000/api/rate-sentence',
+                    'https://learnanewword.onrender.com/api/rate-sentence',
                     {
                         user_sentence: userSentence,
                         word: word
