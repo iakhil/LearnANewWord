@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn a Word</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        header {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 1em;
+            margin: 5px;
+            color: #e0e0e0;
+            background-color: #333;
+            border: 1px solid #444;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #155ab2;
+        }
+        .hidden {
+            display: none;
+        }
+        .rating {
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>Learn a Word</header>
+
+    <section id="word-section">
+        <h2 id="word">Click below to generate a word</h2>
+        <button id="generate-word">Generate Word</button>
+    </section>
+
+    <section id="meaning-section" class="hidden">
+        <h3>What do you think it means?</h3>
+        <input type="text" id="user-meaning" placeholder="Your meaning here">
+        <button id="submit-meaning">Submit Meaning</button>
+        <div id="actual-meaning" class="hidden">
+            <p><strong>Actual Meaning:</strong> <span id="meaning-text"></span></p>
+            <div class="rating">
+                <p>Rate your guess:</p>
+                <button class="rate-btn">1</button>
+                <button class="rate-btn">2</button>
+                <button class="rate-btn">3</button>
+                <button class="rate-btn">4</button>
+                <button class="rate-btn">5</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="sentence-section" class="hidden">
+        <h3>Make a sentence using the word</h3>
+        <input type="text" id="user-sentence" placeholder="Your sentence here">
+        <button id="submit-sentence">Submit Sentence</button>
+        <div id="sentence-feedback" class="hidden">
+            <p><strong>Sentence Feedback:</strong> <span id="sentence-feedback-text"></span></p>
+            <div class="rating">
+                <p>Rate your sentence:</p>
+                <button class="rate-btn">1</button>
+                <button class="rate-btn">2</button>
+                <button class="rate-btn">3</button>
+                <button class="rate-btn">4</button>
+                <button class="rate-btn">5</button>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Learn a Word</p>
+    </footer>
+
+    <script>
+        const wordSection = document.getElementById('word-section');
+        const meaningSection = document.getElementById('meaning-section');
+        const sentenceSection = document.getElementById('sentence-section');
+
+        const wordElement = document.getElementById('word');
+        const actualMeaningDiv = document.getElementById('actual-meaning');
+        const actualMeaningText = document.getElementById('meaning-text');
+        const sentenceFeedbackDiv = document.getElementById('sentence-feedback');
+        const sentenceFeedbackText = document.getElementById('sentence-feedback-text');
+
+        document.getElementById('generate-word').addEventListener('click', () => {
+            fetch('https://api.openai.com/v1/words/random', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer YOUR_OPENAI_API_KEY`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                wordElement.textContent = data.word;
+                meaningSection.classList.remove('hidden');
+            })
+            .catch(error => console.error('Error fetching word:', error));
+        });
+
+        document.getElementById('submit-meaning').addEventListener('click', () => {
+            // Simulating actual meaning fetch for now
+            actualMeaningText.textContent = "The actual meaning of the word.";
+            actualMeaningDiv.classList.remove('hidden');
+            sentenceSection.classList.remove('hidden');
+        });
+
+        document.getElementById('submit-sentence').addEventListener('click', () => {
+            // Simulating sentence feedback fetch for now
+            sentenceFeedbackText.textContent = "Great attempt! This makes sense.";
+            sentenceFeedbackDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
