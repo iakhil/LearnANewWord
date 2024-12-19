@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Learn a Word</title>
+    <link rel="icon" type="image/x-icon" href="frontend/favicon.png">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        header {
+            font-size: 2em;
+            margin-bottom: 20px;
+        }
+        section {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input, button {
+            padding: 10px;
+            font-size: 1em;
+            margin: 5px;
+            color: #e0e0e0;
+            background-color: #333;
+            border: 1px solid #444;
+        }
+        button {
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #155ab2;
+        }
+        .hidden {
+            display: none;
+        }
+        .rating {
+            margin-top: 10px;
+        }
+        .stars {
+            display: inline-block;
+            color: #ffdd00;
+            font-size: 1.5em;
+        }
+    </style>
+</head>
+<body>
+    <header>Learn a Word</header>
+
+    <section id="word-section">
+        <h2 id="word">Click below to generate a word</h2>
+        <button id="generate-word">Generate Word</button>
+    </section>
+
+    <section id="meaning-section" class="hidden">
+        <h3>What do you think it means?</h3>
+        <input type="text" id="user-meaning" placeholder="Your meaning here">
+        <button id="submit-meaning">Submit Meaning</button>
+        <div id="actual-meaning" class="hidden">
+            <p><strong>Actual Meaning:</strong> <span id="meaning-text"></span></p>
+            <div class="rating">
+                <p><strong>Accuracy:</strong> <span id="rating-text"></span></p>
+                <div class="stars" id="stars-rating"></div>
+            </div>
+        </div>
+    </section>
+
+    <section id="sentence-section" class="hidden">
+        <h3>Make a sentence using the word</h3>
+        <input type="text" id="user-sentence" placeholder="Your sentence here">
+        <button id="submit-sentence">Submit Sentence</button>
+        <div id="sentence-feedback" class="hidden">
+            <p><strong>Sentence Feedback:</strong> <span id="sentence-feedback-text"></span></p>
+            <div class="rating">
+                <p><strong>Sentence Rating:</strong></p>
+                <div class="stars" id="sentence-stars-rating"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>&copy; 2024 Learn a Word</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    <script>
+        async function getRandomWord() {
+            const response = await fetch('frontend/words.json');
+            const data = await response.json();
+            const wordArray = data.words;
+            const randomIndex = Math.floor(Math.random() * wordArray.length);
+            return wordArray[randomIndex];
+        }
+
+        async function getWordMeaning(word) {
+            const response = await fetch(`https://api.dictionaryapi.dev/api/v2/entries/en/${word}`);
+            if (!response.ok) {
+                return 'Meaning not found';
+            }
+            const data = await response.json();
+            return data[0]?.meanings[0]?.definitions[0]?.definition || 'Meaning not found';
+        }
+
+        async function getRatingFromAPI(userMeaning, actualMeaning) {
+            try {
+                const response = await axios.post(
+                    'https://learnanewword.onrender.com/api/rate-meaning',
+                    {
+                        user_meaning: userMeaning,
+                        actual_meaning: actualMeaning
+                    }
+                );
+                return response.data.rating;
+            } catch (error) {
+                console.error("Error with API:", error);
+                return "Unable to fetch rating.";
+            }
+        }
+
+        async function getSentenceRatingFromAPI(userSentence, word) {
+            try {
+                const response = await axios.post(
+                    'https://learnanewword.onrender.com/api/rate-sentence',
+                    {
+                        user_sentence: userSentence,
+                        word: word
+                    }
+                );
+                return response.data.rating;
+            } catch (error) {
+                console.error("Error with API:", error);
+                return "Unable to fetch rating.";
+            }
+        }
+
+        function displayStars(rating, elementId) {
+            const starsContainer = document.getElementById(elementId);
+            starsContainer.innerHTML = '';
+
+            const starCount = parseInt(rating, 10);
+            if (isNaN(starCount)) {
+                starsContainer.textContent = 'No stars available';
+                return;
+            }
+
+            for (let i = 0; i < starCount; i++) {
+                starsContainer.innerHTML += '★';
+            }
+
+            for (let i = starCount; i < 5; i++) {
+                starsContainer.innerHTML += '☆';
+            }
+        }
+
+        const wordSection = document.getElementById('word-section');
+        const meaningSection = document.getElementById('meaning-section');
+        const sentenceSection = document.getElementById('sentence-section');
+
+        const wordElement = document.getElementById('word');
+        const actualMeaningDiv = document.getElementById('actual-meaning');
+        const actualMeaningText = document.getElementById('meaning-text');
+        const ratingText = document.getElementById('rating-text');
+        const sentenceFeedbackDiv = document.getElementById('sentence-feedback');
+        const sentenceFeedbackText = document.getElementById('sentence-feedback-text');
+
+        document.getElementById('generate-word').addEventListener('click', async () => {
+            const randomWord = await getRandomWord();
+            wordElement.textContent = randomWord;
+
+            // Clear previous inputs and results
+            document.getElementById('user-meaning').value = '';
+            document.getElementById('user-sentence').value = '';
+            actualMeaningDiv.classList.add('hidden');
+            actualMeaningText.textContent = '';
+            ratingText.textContent = '';
+            document.getElementById('stars-rating').textContent = '';
+            document.getElementById('sentence-stars-rating').textContent = '';
+            sentenceFeedbackDiv.classList.add('hidden');
+            sentenceSection.classList.add('hidden');
+
+            meaningSection.classList.remove('hidden');
+        });
+
+        document.getElementById('submit-meaning').addEventListener('click', async () => {
+            const word = wordElement.textContent;
+            const userMeaning = document.getElementById('user-meaning').value;
+            const actualMeaning = await getWordMeaning(word);
+
+            actualMeaningText.textContent = actualMeaning;
+            const rating = await getRatingFromAPI(userMeaning, actualMeaning);
+            ratingText.textContent = rating;
+
+            displayStars(rating, 'stars-rating');
+            actualMeaningDiv.classList.remove('hidden');
+            sentenceSection.classList.remove('hidden');
+        });
+
+        document.getElementById('submit-sentence').addEventListener('click', async () => {
+            const word = wordElement.textContent;
+            const userSentence = document.getElementById('user-sentence').value;
+
+            const rating = await getSentenceRatingFromAPI(userSentence, word);
+            sentenceFeedbackText.textContent = `Rating: ${rating}`;
+            displayStars(rating, 'sentence-stars-rating');
+            sentenceFeedbackDiv.classList.remove('hidden');
+        });
+    </script>
+</body>
+</html>
