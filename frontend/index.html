@@ -82,6 +82,10 @@
         <button id="submit-sentence">Submit Sentence</button>
         <div id="sentence-feedback" class="hidden">
             <p><strong>Sentence Feedback:</strong> <span id="sentence-feedback-text"></span></p>
+            <div class="rating">
+                <p><strong>Sentence Rating:</strong></p>
+                <div class="stars" id="sentence-stars-rating"></div>
+            </div>
         </div>
     </section>
 
@@ -124,8 +128,24 @@
             }
         }
 
-        function displayStars(rating) {
-            const starsContainer = document.getElementById('stars-rating');
+        async function getSentenceRatingFromAPI(userSentence, word) {
+            try {
+                const response = await axios.post(
+                    'http://localhost:5000/api/rate-sentence',
+                    {
+                        user_sentence: userSentence,
+                        word: word
+                    }
+                );
+                return response.data.rating;
+            } catch (error) {
+                console.error("Error with API:", error);
+                return "Unable to fetch rating.";
+            }
+        }
+
+        function displayStars(rating, elementId) {
+            const starsContainer = document.getElementById(elementId);
             starsContainer.innerHTML = '';
 
             const starCount = parseInt(rating, 10);
@@ -160,10 +180,12 @@
 
             // Clear previous inputs and results
             document.getElementById('user-meaning').value = '';
+            document.getElementById('user-sentence').value = '';
             actualMeaningDiv.classList.add('hidden');
             actualMeaningText.textContent = '';
             ratingText.textContent = '';
             document.getElementById('stars-rating').textContent = '';
+            document.getElementById('sentence-stars-rating').textContent = '';
             sentenceFeedbackDiv.classList.add('hidden');
             sentenceSection.classList.add('hidden');
 
@@ -179,13 +201,18 @@
             const rating = await getRatingFromAPI(userMeaning, actualMeaning);
             ratingText.textContent = rating;
 
-            displayStars(rating);
+            displayStars(rating, 'stars-rating');
             actualMeaningDiv.classList.remove('hidden');
             sentenceSection.classList.remove('hidden');
         });
 
-        document.getElementById('submit-sentence').addEventListener('click', () => {
-            sentenceFeedbackText.textContent = "Great attempt! This makes sense.";
+        document.getElementById('submit-sentence').addEventListener('click', async () => {
+            const word = wordElement.textContent;
+            const userSentence = document.getElementById('user-sentence').value;
+
+            const rating = await getSentenceRatingFromAPI(userSentence, word);
+            sentenceFeedbackText.textContent = `Rating: ${rating}`;
+            displayStars(rating, 'sentence-stars-rating');
             sentenceFeedbackDiv.classList.remove('hidden');
         });
     </script>
